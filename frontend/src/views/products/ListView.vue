@@ -10,10 +10,8 @@ const router = useRouter()
 const { products, loading, fetchAll, remove } = useProducts()
 
 const showDeleteModal = ref(false)
-// Mantenemos 'any' aquí para evitar el error de TypeScript con el slot genérico de AppTable
 const selectedProduct = ref<any>(null)
 
-// Mapeo de columnas exacto para AppTable
 const headers = [
   { key: 'name', label: 'Nombre' },
   { key: 'category_name', label: 'Categoría' },
@@ -50,13 +48,30 @@ async function handleDelete() {
       </AppButton>
     </div>
 
-    <!-- Tabla Glass (Estándar Faro) -->
+    <!-- Tabla Glass -->
     <AppTable 
       :headers="headers" 
       :rows="products" 
       :loading="loading"
       empty-message="No hay productos creados aún."
     >
+      <!-- FORMATEO ESPECIAL: Columna Precio (Se activa automáticamente por llamarse cell-price) -->
+      <template #cell-price="{ value }">
+        <span class="font-mono">$ {{ Number(value).toFixed(2) }}</span>
+      </template>
+
+      <!-- FORMATEO ESPECIAL: Columna Estado (Chip Glassmorphism) -->
+      <template #cell-status="{ value }">
+        <span 
+          class="px-3 py-1 rounded-full text-xs font-semibold"
+          :style="value === 'Activo' 
+            ? 'background: rgba(16, 185, 129, 0.15); color: var(--color-primary-dark);' 
+            : 'background: rgba(100, 116, 139, 0.15); color: var(--color-text-secondary);'"
+        >
+          {{ value }}
+        </span>
+      </template>
+
       <!-- Slot de acciones estándar -->
       <template #actions="{ row }">
         <div class="flex items-center justify-end gap-2">
@@ -70,7 +85,7 @@ async function handleDelete() {
       </template>
     </AppTable>
 
-    <!-- Modal de Eliminar (Usando el slot #footer) -->
+    <!-- Modal de Eliminar -->
     <AppModal :is-open="showDeleteModal" title="Eliminar Producto" size="sm" @close="showDeleteModal = false">
       <p class="text-sm" style="color: var(--color-text-secondary)">
         ¿Estás seguro de eliminar <strong style="color: var(--color-text-primary)">{{ selectedProduct?.name }}</strong>? Esta acción no se puede deshacer.
